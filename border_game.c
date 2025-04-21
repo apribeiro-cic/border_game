@@ -91,6 +91,19 @@ void setup_GPIOs() {
     gpio_set_dir(buzzer_b_pin, GPIO_OUT);
 }
 
+// Função para desligar os LEDs (Todos ou todos menos um específico)
+void turn_off_leds(uint gpio, bool turn_off_all) {
+    if (turn_off_all) {
+        gpio_put(led_pin_red, 0);
+        gpio_put(led_pin_blue, 0);
+        gpio_put(led_pin_green, 0);
+    } else {
+        gpio_put(led_pin_red, gpio == led_pin_red ? 1 : 0);
+        gpio_put(led_pin_blue, gpio == led_pin_blue ? 1 : 0);
+        gpio_put(led_pin_green, gpio == led_pin_green ? 1 : 0);
+    }
+}
+
 // Função para configurar o PWM
 void pwm_setup_gpio(uint gpio, uint freq) {
     gpio_set_function(gpio, GPIO_FUNC_PWM);  // Define o pino como saída PWM
@@ -208,19 +221,6 @@ void desenho_pio(double *desenho, uint32_t valor_led, PIO pio, uint sm, double r
     }
 }
 
-// Função para desligar os LEDs (Todos ou todos menos um específico)
-void turn_off_leds(uint gpio, bool turn_off_all) {
-    if (turn_off_all) {
-        gpio_put(led_pin_red, 0);
-        gpio_put(led_pin_blue, 0);
-        gpio_put(led_pin_green, 0);
-    } else {
-        gpio_put(led_pin_red, gpio == led_pin_red ? 1 : 0);
-        gpio_put(led_pin_blue, gpio == led_pin_blue ? 1 : 0);
-        gpio_put(led_pin_green, gpio == led_pin_green ? 1 : 0);
-    }
-}
-
 int main()
 {
     stdio_init_all();
@@ -260,8 +260,6 @@ int main()
     uint16_t adc_value_x = 0; // Variável para armazenar o valor do ADC do eixo X
     uint16_t adc_value_y = 0; // Variável para armazenar o valor do ADC do eixo Y
 
-    srand(time(0));
-
     while (true) {    
         // Lê os valores do ADC dos eixos X e Y
         adc_select_input(1);
@@ -270,6 +268,7 @@ int main()
         adc_value_y = adc_read();
 
         uint32_t current_time = to_ms_since_boot(get_absolute_time()); // Obtém o tempo atual
+        srand(current_time); // Inicializa o gerador de números aleatórios com o tempo atual
 
         static bool buzzer_on = false; // Variável para controlar o estado do buzzer
         static uint32_t last_beep_time = 0; // Armazena o tempo do último beep
